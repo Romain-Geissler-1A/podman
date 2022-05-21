@@ -196,10 +196,8 @@ func buildFlags(cmd *cobra.Command) {
 
 // build executes the build command.
 func build(cmd *cobra.Command, args []string) error {
-	if (cmd.Flags().Changed("squash") && cmd.Flags().Changed("layers")) ||
-		(cmd.Flags().Changed("squash-all") && cmd.Flags().Changed("layers")) ||
-		(cmd.Flags().Changed("squash-all") && cmd.Flags().Changed("squash")) {
-		return errors.New("cannot specify --squash, --squash-all and --layers options together")
+	if cmd.Flags().Changed("squash-all") && cmd.Flags().Changed("squash") {
+		return errors.New("cannot specify --squash and --squash-all options together")
 	}
 
 	if cmd.Flag("output").Changed && registry.IsRemote() {
@@ -413,12 +411,10 @@ func buildFlagsWrapperToOptions(c *cobra.Command, contextDir string, flags *buil
 	// one.
 	if c.Flags().Changed("squash") && buildOpts.Squash {
 		flags.Squash = false
-		flags.Layers = false
 	}
 	// Squash-all invoked, squash both new and old layers into one.
 	if c.Flags().Changed("squash-all") {
 		flags.Squash = true
-		flags.Layers = false
 	}
 
 	var stdin io.Reader
@@ -450,12 +446,10 @@ func buildFlagsWrapperToOptions(c *cobra.Command, contextDir string, flags *buil
 	// Squash invoked, retain old layers, squash new layers into one.
 	if c.Flags().Changed("squash") && flags.Squash {
 		flags.Squash = false
-		flags.Layers = false
 	}
 	// Squash-all invoked, squash both new and old layers into one.
 	if c.Flags().Changed("squash-all") {
 		flags.Squash = true
-		flags.Layers = false
 	}
 
 	compression := buildahDefine.Gzip
